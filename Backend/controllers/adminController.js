@@ -1,0 +1,88 @@
+const Admin = require('../models/admin');
+const collection = require('../models/category');
+const jwt = require('jsonwebtoken');
+const signupSchema = require('../middlewares/validator');
+const doHash = require('../utils/hashing');
+
+exports.adminSignup = async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const { error, value } = signupSchema.validate({ email, password });
+        if (error) {
+            return res
+                .status(401)
+                .json({ success: false, message: error.details[0].message });
+        }
+        
+        // Check if admin already exists
+        const existingAdmin = await Admin.findOne({ email });
+        if (existingAdmin) {
+            return res
+            .status(401)
+            .json({ success: false, message: 'Admin already exists' });
+        }
+        const hashedPassword = await doHash(password, 12);
+        
+        // Create a new admin (the pre-save hook will hash the password)
+        const newAdmin = new Admin({ email, password: hashedPassword });
+        await newAdmin.save();
+        res.status(201).json({ success: true, message: 'Admin created successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+};
+
+exports.adminDetails = async (req,res)=>{
+    try {
+        const { id } = req.params;
+
+        // Find admin by ID, exclude password
+        const admin = await Admin.findById(id);
+        if (!admin) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        res.json(admin);
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+}
+
+exports.CategoryUpdate = async (req, res) => {
+	const { title, price } = req.body;
+	try{
+		const existingcategory = await collection.findOne({ title })
+		if(existingcategory){
+			return res
+			.status(401)
+			.json({ success: false, message: 'Category already exist' });
+		}
+		const newCategory = new collection({
+			title,
+			price,
+		});
+		await newCategory.save();
+		res.json({ success: true, message: "Category added successfully"});
+
+	} catch (error) {
+		console.error("Error adding category:", error);
+		res.status(500).json({ success: false, message: "Server error with  adding category" });
+	}
+};
+	
+
+exports.Categories = async (req, res) => {
+	try{
+		const existingcategory = await collection.find()
+		if(!existingcategory){
+			return res
+			.status(401)
+			.json({ success: false, message: 'No Categories' });
+		}
+		res.json({ success: true, message: "Category fetched", existingcategory});
+
+	} catch (error) {
+		console.error("Error fetching category:", error);
+		res.status(500).json({ success: false, message: "Server error with  fetching category" });
+	}
+};
