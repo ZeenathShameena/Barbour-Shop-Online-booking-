@@ -1,8 +1,8 @@
 const Admin = require('../models/admin');
 const collection = require('../models/category');
 const jwt = require('jsonwebtoken');
-const signupSchema = require('../middlewares/validator');
-const doHash = require('../utils/hashing');
+const { signupSchema} = require('../middlewares/validator');
+const { doHash} = require('../utils/hashing');
 
 exports.adminSignup = async (req, res) => {
     const { email, password } = req.body;

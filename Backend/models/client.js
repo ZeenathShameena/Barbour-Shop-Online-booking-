@@ -7,8 +7,10 @@ const userSchema = mongoose.Schema(
 			required: [true, 'Name is required!'],
 		},
         mobile: {
-			type: String,
-			required: [true, 'Mobile must be provided!'],
+			type: String
+		},
+		address: {
+			type: String
 		},
 		email: {
 			type: String,

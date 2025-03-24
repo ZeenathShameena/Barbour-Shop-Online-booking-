@@ -13,14 +13,14 @@ const AdminHome = () => {
           appToken: "cGGzWGtIEOjd3vq5QVWVfP",
           title: "Gents Camp",
           body: "Hii",
-          dateSent: "3-22-2025 3:16PM"
+          dateSent: Date.now
         });
         const response = await fetch(`https://app.nativenotify.com/api/notification`, {
             method: 'POST',
             headers: headers,
             body: body
         });
-        const text = await response.text(); 
+        const text = await response.text();
         console.log("Server response:", text); 
         if (text.includes("Success")) {
             console.log("Notification sent successfully!");

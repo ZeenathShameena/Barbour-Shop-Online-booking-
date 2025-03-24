@@ -11,7 +11,7 @@ const transport = require('../middlewares/sendMail');
 
 
 exports.signup = async (req, res) => {
-	const { email, password } = req.body;
+	const { email, password, name } = req.body;
 	try {
 		const { error, value } = signupSchema.validate({ email, password });
 		if (error) {
@@ -31,6 +31,7 @@ exports.signup = async (req, res) => {
 		const newUser = new User({
 			email,
 			password: hashedPassword,
+			name
 		});
 		const result = await newUser.save();
 		result.password = undefined;
@@ -228,7 +229,7 @@ exports.updateclient = async (req, res) => {
 }
 
 exports.client = async (req, res) => {
-	const {userId, email} = req.user
+	const {userId} = req.user
 	try{
 		const user = await User.findById( userId );
 		if(!user){

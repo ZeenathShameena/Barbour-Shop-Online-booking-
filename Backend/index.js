@@ -19,12 +19,12 @@ app.use(cors({
 const connectDB = require('./config/db');
 const authRouter= require('./routers/authroute');
 const adminRouter = require('./routers/adminRoute');
-
+const slotRouter = require('./routers/slotRoutes')
 
 connectDB();
 
 app.use('/api/auth', authRouter);
 app.use('/api/admin',adminRouter)
-
+app.use('/api/slot',slotRouter)
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

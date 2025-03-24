@@ -17,6 +17,10 @@ router.patch(
 	authController.verifyForgotPasswordCode
 );
 
+router.post('/update-client', identifier, authController.updateclient);
+router.get('/client', identifier, authController.client);
+
+
 
 
 

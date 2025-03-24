@@ -10,7 +10,8 @@ const timeSlotSchema = new mongoose.Schema({
         default:false
     },
     bookedBy:{
-        type:mongoose.Schema.Types.ObjectId,ref:'user',
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'client',
         default:null,
     }
 })
