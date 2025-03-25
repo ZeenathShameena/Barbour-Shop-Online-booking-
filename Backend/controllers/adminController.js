@@ -1,5 +1,6 @@
 const Admin = require('../models/admin');
 const collection = require('../models/category');
+const Shop = require('../models/shop');
 const jwt = require('jsonwebtoken');
 const { signupSchema} = require('../middlewares/validator');
 const { doHash} = require('../utils/hashing');
@@ -51,18 +52,21 @@ exports.adminDetails = async (req,res)=>{
 exports.CategoryUpdate = async (req, res) => {
 	const { title, price } = req.body;
 	try{
-		const existingcategory = await collection.findOne({ title })
-		if(existingcategory){
-			return res
-			.status(401)
-			.json({ success: false, message: 'Category already exist' });
-		}
-		const newCategory = new collection({
-			title,
-			price,
-		});
-		await newCategory.save();
-		res.json({ success: true, message: "Category added successfully"});
+		const existing = await collection.findOne({ title })
+		if(existing){
+            // If the category exists, update its price
+            existing.price = price;
+            await existing.save();
+            return res.json({ success: true, message: 'price updated' });
+        } else {
+            // If the category does not exist, create a new one
+            const newCategory = new collection({
+                title,
+                price,
+            });
+            await newCategory.save();
+            res.json({ success: true, message: "Category added "});
+    	}
 
 	} catch (error) {
 		console.error("Error adding category:", error);
@@ -80,6 +84,18 @@ exports.Categories = async (req, res) => {
 			.json({ success: false, message: 'No Categories' });
 		}
 		res.json({ success: true, message: "Category fetched", existingcategory});
+
+	} catch (error) {
+		console.error("Error fetching category:", error);
+		res.status(500).json({ success: false, message: "Server error with  fetching category" });
+	}
+};
+
+exports.shopStatus = async (req, res) => {
+	try{
+		const status = await Shop.find({})
+        const Status =status
+		res.json({ success: true, message: "Status Fetched", Status});
 
 	} catch (error) {
 		console.error("Error fetching category:", error);
