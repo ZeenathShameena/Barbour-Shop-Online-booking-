@@ -10,11 +10,9 @@ exports.signupSchema = Joi.object({
 		.required()
 		.pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$'))
 		.messages({
-			'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, and one number.',
+			'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, and one number.'
 		}),
-		.pattern(new RegExp('^(?=.[a-z])(?=.[A-Z])(?=.*\\d).{8,}$'))
-		.message('Password must contain at least one uppercase letter, one lowercase letter, and one number.'),
-});
+
 
 exports.signinSchema = Joi.object({
 	email: Joi.string()
