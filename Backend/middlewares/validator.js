@@ -9,7 +9,9 @@ exports.signupSchema = Joi.object({
 	password: Joi.string()
 		.required()
 		.pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$'))
-		.message('Password must contain at least one uppercase letter, one lowercase letter, and one number.'),
+		.messages({
+			'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, and one number.',
+		}),
 });
 
 exports.signinSchema = Joi.object({
@@ -17,13 +19,13 @@ exports.signinSchema = Joi.object({
 		.min(6)
 		.max(60)
 		.required()
-		.email({
-			tlds: { allow: ['com', 'net'] },
-		}),
+		.email(), // Removed TLD restriction to allow all emails
 	password: Joi.string()
 		.required()
 		.pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$'))
-		.message('Password must contain at least one uppercase letter, one lowercase letter, and one number.'),
+		.messages({
+			'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, and one number.',
+		}),
 });
 
 exports.acceptFPCodeSchema = Joi.object({
@@ -31,12 +33,15 @@ exports.acceptFPCodeSchema = Joi.object({
 		.min(6)
 		.max(60)
 		.required()
-		.email({
-			tlds: { allow: ['com', 'net'] },
-		}),
-	providedCode: Joi.number().required(),
+		.email(),
+	providedCode: Joi.number()
+		.required()
+		.integer() // Ensures it's an integer
+		.messages({ 'number.base': 'Provided code must be a number.' }),
 	newPassword: Joi.string()
 		.required()
 		.pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$'))
-		.message('Password must contain at least one uppercase letter, one lowercase letter, and one number.'),
+		.messages({
+			'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, and one number.',
+		}),
 });
