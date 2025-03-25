@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../context/ThemeContext';
 
 const LoginScreen = ({ navigation }) => {
@@ -8,6 +16,28 @@ const LoginScreen = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState(false);
   const { currentTheme } = useTheme();
 
+  // Check token and auto-login
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      const role = await AsyncStorage.getItem('userRole');
+
+      if (token) {
+        console.log('Token found, auto-login with role:', role);
+        
+        // Navigate based on stored role
+        if (role === 'admin') {
+          navigation.replace('AdminStack');
+        } else {
+          navigation.replace('CustomerStack');
+        }
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  // Handle login
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter both email and password.');
@@ -15,23 +45,35 @@ const LoginScreen = ({ navigation }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.1.4:4500/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
+      const response = await fetch(
+        'https://gents-camp.onrender.com/api/auth/signin',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        }
+      );
 
       const data = await response.json();
 
       if (response.ok) {
+        const token = data.token;
+        const role = data.role; // Store the role too
+
+        // Store token and role in AsyncStorage
+        await AsyncStorage.setItem('authToken', token);
+        await AsyncStorage.setItem('userRole', role);
+
         Alert.alert('Success', 'Login successful!');
-        // Check role and navigate accordingly
-        if (data.role === "admin") {
-          navigation.navigate('AdminStack');
+        console.log('Token & Role saved:', token, role);
+
+        // Navigate based on the user's role
+        if (role === 'admin') {
+          navigation.replace('AdminStack');
         } else {
-          navigation.navigate('CustomerStack');
+          navigation.replace('CustomerStack');
         }
       } else {
         Alert.alert('Error', data.message || 'Invalid email or password.');
@@ -42,14 +84,22 @@ const LoginScreen = ({ navigation }) => {
     }
   };
 
+  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: currentTheme.backgroundColor }]}>
-      <Text style={[styles.title, { color: currentTheme.textColor }]}>Login</Text>
-      
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: currentTheme.backgroundColor }
+      ]}
+    >
+      <Text style={[styles.title, { color: currentTheme.textColor }]}>
+        Login
+      </Text>
+
       <TextInput
         placeholder="Email"
         placeholderTextColor={currentTheme.placeholderColor}
@@ -66,7 +116,7 @@ const LoginScreen = ({ navigation }) => {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      
+
       <View style={styles.passwordContainer}>
         <TextInput
           placeholder="Password"
@@ -83,14 +133,14 @@ const LoginScreen = ({ navigation }) => {
             }
           ]}
         />
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[
-            styles.eyeButton, 
-            { 
+            styles.eyeButton,
+            {
               backgroundColor: currentTheme.inputBackground,
-              borderColor: currentTheme.borderColor 
+              borderColor: currentTheme.borderColor
             }
-          ]} 
+          ]}
           onPress={togglePasswordVisibility}
         >
           <Text style={{ color: currentTheme.textColor }}>
@@ -98,15 +148,15 @@ const LoginScreen = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
       </View>
-      
-      <TouchableOpacity 
+
+      <TouchableOpacity
         style={[styles.button, { backgroundColor: currentTheme.buttonColor }]}
         onPress={handleLogin}
       >
         <Text style={[styles.buttonText, { color: '#333333' }]}>Login</Text>
       </TouchableOpacity>
-      
-      <TouchableOpacity onPress={() => navigation.navigate('AdminStack')}>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
         <Text style={[styles.registerText, { color: currentTheme.linkColor }]}>
           Don't have an account? Register
         </Text>
