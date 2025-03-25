@@ -86,3 +86,16 @@ exports.Categories = async (req, res) => {
 		res.status(500).json({ success: false, message: "Server error with  fetching category" });
 	}
 };
+const Shop = require('../models/shop');
+
+exports.shopStatus = async (req, res) => {
+	try{
+		const status = await Shop.find({})
+        const Status =status
+		res.json({ success: true, message: "Status Fetched", Status});
+
+	} catch (error) {
+		console.error("Error fetching category:", error);
+		res.status(500).json({ success: false, message: "Server error with  fetching category" });
+	}
+};
