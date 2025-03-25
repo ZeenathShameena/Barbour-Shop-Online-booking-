@@ -1,46 +1,57 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, { useEffect } from 'react'
+import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native'
+import React, { useState } from 'react'
 
 const AdminHome = () => {
-
-  const notification= async () => {
-    try {
-        const headers = {
-            'Content-Type': 'application/json'
-        };
-        const body = JSON.stringify({
-          appId: 28467,
-          appToken: "cGGzWGtIEOjd3vq5QVWVfP",
-          title: "Gents Camp",
-          body: "Hii",
-          dateSent: Date.now
-        });
-        const response = await fetch(`https://app.nativenotify.com/api/notification`, {
-            method: 'POST',
-            headers: headers,
-            body: body
-        });
-        const text = await response.text();
-        console.log("Server response:", text); 
-        if (text.includes("Success")) {
-            console.log("Notification sent successfully!");
-        } else {
-            console.error("Unexpected response:", text);
-        }
-    } catch (error) {
-        console.error("Error in notification:", error);
-    }  
-  }
-  useEffect(() => {
-    notification()
-  });
   return (
-    <View>
-      <Text>AdminHome</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Admin Home</Text>
+      <Text style={styles.status}>Status: {status || 'Unknown'}</Text>
+
+      <TouchableOpacity style={[styles.button, styles.open]} onPress={handleOpen}>
+        <Text style={styles.buttonText}>Open Shop</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.button, styles.close]} onPress={handleClose}>
+        <Text style={styles.buttonText}>Close Shop</Text>
+      </TouchableOpacity>
     </View>
   )
 }
 
 export default AdminHome
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  status: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  button: {
+    width: 200,
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  open: {
+    backgroundColor: '#4CAF50',
+  },
+  close: {
+    backgroundColor: '#F44336',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+})

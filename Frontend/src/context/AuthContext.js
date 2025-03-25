@@ -1,47 +1,55 @@
 // context/AuthContext.js
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Create AuthContext
 const AuthContext = createContext();
 
-// AuthProvider Component
 export const AuthProvider = ({ children }) => {
-  const [adminDetails, setAdminDetails] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch admin details
-  const fetchAdminDetails = async () => {
-    try {
-      const response = await fetch(
-        'http://localhost:4500/api/admin/details/67de501a758770759db45232'
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch admin details');
-      }
-
-      const data = await response.json();
-      setAdminDetails(data);
-    } catch (error) {
-      console.error('Error fetching admin details:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Load admin data when the component mounts
+  // Load token and role from AsyncStorage on app load
   useEffect(() => {
-    fetchAdminDetails();
+    const loadToken = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('authToken');
+        const storedRole = await AsyncStorage.getItem('userRole');
+        if (storedToken) {
+          setToken(storedToken);
+          setUserRole(storedRole);
+        }
+      } catch (error) {
+        console.error('Error loading token:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadToken();
   }, []);
 
+  // Save token and role in AsyncStorage and state
+  const login = async (token, role) => {
+    setToken(token);
+    setUserRole(role);
+    await AsyncStorage.setItem('authToken', token);
+    await AsyncStorage.setItem('userRole', role);
+  };
+
+  // Remove token and role from AsyncStorage and state
+  const logout = async () => {
+    setToken(null);
+    setUserRole(null);
+    await AsyncStorage.removeItem('authToken');
+    await AsyncStorage.removeItem('userRole');
+  };
+
   return (
-    <AuthContext.Provider value={{ adminDetails, loading }}>
+    <AuthContext.Provider value={{ token, userRole, login, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook to use AuthContext
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);
