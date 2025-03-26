@@ -41,7 +41,7 @@ exports.closeShop = async (req, res) => {
 };
 
 exports.bookSlot = async (req, res) => {
-  const { userId, slotId, category } = req.body;
+  const { userId, slotId, selectedCategory } = req.body;
 
   const slot = await TimeSlot.findById(slotId);
   if (!slot || slot.isBooked) {
@@ -50,7 +50,7 @@ exports.bookSlot = async (req, res) => {
 
   slot.isBooked = true;
   slot.bookedBy = userId;
-  slot.selectedCategory= category;
+  slot.selectedCategory= selectedCategory;
 
   await slot.save();
 
