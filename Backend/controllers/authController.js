@@ -239,7 +239,24 @@ exports.client = async (req, res) => {
 
 	} catch (error) {
 		console.error("Error fetching client details:", error);
-		res.status(500).json({ error, success: false, message: "Server error with fetching client details" });
+		res
+		.status(500)
+		.json({ error, success: false, message: "Server error with fetching client details" });
 	}
 
 }
+
+exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find(); 
+
+        if (users.length === 0) {
+            return res.status(404).json({ success: false, message: "No users found" });
+        }
+
+        res.json({ success: true, users });
+    } catch (error) {
+        console.error("Error fetching all users:", error);
+        res.status(500).json({ success: false, message: "Server error fetching users", error: error.message });
+    }
+};
