@@ -90,6 +90,7 @@ exports.signin = async (req, res) => {
 				success: true,
 				token,
 				role,
+				userId: existingUser._id,
 				message: 'logged in successfully',
 			});
 	} catch (error) {
