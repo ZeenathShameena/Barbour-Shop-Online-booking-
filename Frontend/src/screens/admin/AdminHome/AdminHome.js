@@ -1,11 +1,11 @@
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Alert } from 'react-native'
 import React, { useState } from 'react'
 
 const AdminHome = () => {
   const [status, setStatus] = useState('')
-  const [closingTime] = useState('17:00')
+  const [closingTime, setClosingTime] = useState('17:00')
 
-  // Get current time in 'hh:mm A' format
+  // Get current time in 'hh:mm' format
   const getCurrentTime = () => {
     const now = new Date()
     let hours = now.getHours()
@@ -18,6 +18,11 @@ const AdminHome = () => {
   const handleOpen = async () => {
     const openingTime = getCurrentTime()
 
+    if (!closingTime.match(/^([01]\d|2[0-3]):([0-5]\d)$/)) {
+      Alert.alert('Invalid Time', 'Please enter a valid closing time in HH:mm format.')
+      return
+    }
+
     try {
       const response = await fetch('https://gents-camp.onrender.com/api/slot/set-open', {
         method: 'POST',
@@ -26,17 +31,16 @@ const AdminHome = () => {
         },
         body: JSON.stringify({
           openingTime: openingTime,
-          closingTime:closingTime,
+          closingTime: closingTime,
         }),
       })
-      console.log (openingTime ,closingTime)
 
       const jsonResponse = await response.json()
       console.log('Open API Response:', jsonResponse)
 
       if (response.ok) {
         setStatus('Open')
-        Alert.alert('Success', `The shop is now open at ${openingTime}.`)
+        Alert.alert('Success', `The shop is now open. Closing time is set to ${closingTime}.`)
       } else {
         Alert.alert('Error', 'Failed to set shop as open.')
       }
@@ -77,16 +81,46 @@ const AdminHome = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Admin Home</Text>
-      <Text style={styles.status}>Status: {status || 'Unknown'}</Text>
+      <View style={styles.card}>
+        <Text style={styles.title}>Shop Management</Text>
+        
+        <View style={styles.statusContainer}>
+          <Text style={styles.labelText}>Current Status:</Text>
+          <Text style={[
+            styles.statusText, 
+            status === 'Open' ? styles.openStatus : styles.closedStatus
+          ]}>
+            {status || 'Unknown'}
+          </Text>
+        </View>
 
-      <TouchableOpacity style={[styles.button, styles.open]} onPress={handleOpen}>
-        <Text style={styles.buttonText}>Open Shop</Text>
-      </TouchableOpacity>
+        <View style={styles.inputContainer}>
+          <Text style={styles.labelText}>Closing Time</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="HH:mm"
+            value={closingTime}
+            onChangeText={(text) => setClosingTime(text)}
+            keyboardType="numeric"
+          />
+        </View>
 
-      <TouchableOpacity style={[styles.button, styles.close]} onPress={handleClose}>
-        <Text style={styles.buttonText}>Close Shop</Text>
-      </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={[styles.button, styles.openButton]} 
+            onPress={handleOpen}
+          >
+            <Text style={styles.buttonText}>Open Shop</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.button, styles.closeButton]} 
+            onPress={handleClose}
+          >
+            <Text style={styles.buttonText}>Close Shop</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   )
 }
@@ -98,33 +132,84 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f0f2f5',
+    padding: 20,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    color: '#2c3e50',
+    textAlign: 'center',
     marginBottom: 20,
   },
-  status: {
-    fontSize: 18,
-    marginBottom: 20,
-  },
-  button: {
-    width: 200,
-    padding: 15,
-    borderRadius: 10,
+  statusContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 20,
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
   },
-  open: {
-    backgroundColor: '#4CAF50',
+  labelText: {
+    fontSize: 16,
+    color: '#34495e',
+    fontWeight: '600',
   },
-  close: {
-    backgroundColor: '#F44336',
-  },
-  buttonText: {
-    color: '#fff',
+  statusText: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  openStatus: {
+    color: '#27ae60',
+  },
+  closedStatus: {
+    color: '#e74c3c',
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  input: {
+    height: 50,
+    borderColor: '#bdc3c7',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    backgroundColor: 'white',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  button: {
+    flex: 1,
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  openButton: {
+    backgroundColor: '#2ecc71',
+  },
+  closeButton: {
+    backgroundColor: '#e74c3c',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '700',
   },
 })

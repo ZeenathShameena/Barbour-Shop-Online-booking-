@@ -36,7 +36,7 @@ const RegisterScreen = ({ navigation }) => {
     }
 
     try {
-      const response = await fetch('http://192.168.1.7:4500/api/auth/signup', {
+      const response = await fetch('https://gents-camp.onrender.com/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
