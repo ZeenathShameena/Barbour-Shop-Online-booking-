@@ -32,22 +32,27 @@ const generateSlots = (openingTime, closingTime) => {
 };
 
 
-exports.openShop = async (req, res) => {
+exports.openSlot = async (req, res) => {
   const { openingTime, closingTime } = req.body;
 
-  await Shop.updateOne({}, { status: 'open', openingTime, closingTime }, { upsert: true });
-
+  await Shop.updateOne({}, { openingTime, closingTime }, { upsert: true }); 
   const slots = generateSlots(openingTime, closingTime);
   await TimeSlot.deleteMany({});
   await TimeSlot.insertMany(slots);
   res.json({ message: 'Shop opened and slots generated' });
 };
 
+exports.openShop = async (req, res) => {
+
+  await Shop.updateOne({}, { status: 'open'}); 
+  res.json({ message: 'Shop opened ' });
+};
+
 exports.closeShop = async (req, res) => {
   await Shop.updateOne({}, { status: 'closed' });
-  await TimeSlot.deleteMany({});
+  //await TimeSlot.deleteMany({});
 
-  res.json({ message: 'Shop closed and all slots reset' });
+  res.json({ message: 'Shop closed' });
 };
 
 exports.bookSlot = async (req, res) => {
@@ -81,7 +86,7 @@ exports.bookSlot = async (req, res) => {
 exports.getSlots = async (req, res) => {
   try {
     const availableSlots = await TimeSlot.find({ isBooked: false });
-    const bookedSlots = await TimeSlot.find({ isBooked: true }).populate('bookedBy', 'name');
+    const bookedSlots = await TimeSlot.find({ isBooked: true }).populate('bookedBy', 'name', 'mobile', 'address');
 
     res.json({ availableSlots, bookedSlots });
   } catch (error) {
