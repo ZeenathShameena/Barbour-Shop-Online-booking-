@@ -12,7 +12,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.frontend.app", // <-- Add this line
+      "package": "com.frontend.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -38,13 +38,13 @@
     "experiments": {
       "typedRoutes": true
     },
-    "owner": "suman_07",
+    "owner": "zeenathshameena",
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "3b50ccbb-76b6-4b20-a496-929d54a306f8"
+         "projectId": "00f7df5e-f5e7-44b5-b179-a17d8e970809"
       }
     }
   }

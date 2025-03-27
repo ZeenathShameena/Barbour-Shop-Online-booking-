@@ -52,12 +52,18 @@ exports.closeShop = async (req, res) => {
 
 exports.bookSlot = async (req, res) => {
   const { userId, slotId, selectedCategory } = req.body;
+ 
+  // Check if the user has already booked a slot
+  const existingBooking = await TimeSlot.countDocuments({ bookedBy: userId });
+
+  if (existingBooking >= 2) {
+    return res.json({ message: 'you can only book 2 slots per day' });
+  }
 
   const slot = await TimeSlot.findById(slotId);
   if (!slot || slot.isBooked) {
     return res.json({ message: 'Slot not available' });
   }
-
   slot.isBooked = true;
   slot.bookedBy = userId;
   slot.selectedCategory= selectedCategory;
