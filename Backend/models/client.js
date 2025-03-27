@@ -38,6 +38,10 @@ const userSchema = mongoose.Schema(
 			type: String,
 			default: null
 		},
+		role:{
+			type:String,
+			default:'client'
+		}
 	},
 	{
 		timestamps: true,

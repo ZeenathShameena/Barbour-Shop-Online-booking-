@@ -15,6 +15,7 @@ import AdminProfile from '../screens/admin/AdminProfile/AdminProfile';
 import CustomerHome from '../screens/customer/CustomerHome/CustomerHome';
 import CustomerBookings from '../screens/customer/CustomerBookings/CustomerBookings';
 import CustomerProfile from '../screens/customer/CustomerProfile/CustomerProfile';
+import CustomerSlotBooking from '../screens/customer/CustomerHome/CustomerSlotBooking';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -84,6 +85,14 @@ const StackNavigator = () => {
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="AdminStack" component={AdminStack} />
       <Stack.Screen name="CustomerStack" component={CustomerStack} />
+
+
+
+
+
+
+
+      <Stack.Screen name='SlotBooking'component={CustomerSlotBooking}/>
     </Stack.Navigator>
   );
 };

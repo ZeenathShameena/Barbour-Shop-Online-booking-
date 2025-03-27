@@ -19,7 +19,7 @@ router.patch(
 
 router.post('/update-client', identifier, authController.updateclient);
 router.get('/client', identifier, authController.client);
-
+router.get('/get-all-clients', identifier, authController.getAllUsers);
 
 
 

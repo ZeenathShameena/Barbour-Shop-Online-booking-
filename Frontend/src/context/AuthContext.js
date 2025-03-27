@@ -1,52 +1,59 @@
-// context/AuthContext.js
+// src/context/AuthContext.js
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({ children, navigation }) => {
   const [token, setToken] = useState(null);
-  const [userRole, setUserRole] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [role, setRole] = useState(null);
 
-  // Load token and role from AsyncStorage on app load
+  // Check token and role from AsyncStorage
   useEffect(() => {
-    const loadToken = async () => {
-      try {
-        const storedToken = await AsyncStorage.getItem('authToken');
-        const storedRole = await AsyncStorage.getItem('userRole');
-        if (storedToken) {
-          setToken(storedToken);
-          setUserRole(storedRole);
-        }
-      } catch (error) {
-        console.error('Error loading token:', error);
-      } finally {
-        setIsLoading(false);
+    const loadAuthData = async () => {
+      const storedToken = await AsyncStorage.getItem('authToken');
+      const storedRole = await AsyncStorage.getItem('userRole');
+
+      if (storedToken && storedRole) {
+        setToken(storedToken);
+        setRole(storedRole);
+        navigateToStack(storedRole);
       }
     };
 
-    loadToken();
+    loadAuthData();
   }, []);
 
-  // Save token and role in AsyncStorage and state
+  // Handle login - store token and role
   const login = async (token, role) => {
-    setToken(token);
-    setUserRole(role);
     await AsyncStorage.setItem('authToken', token);
     await AsyncStorage.setItem('userRole', role);
+
+    setToken(token);
+    setRole(role);
+    navigateToStack(role);
+    console.log(token,role)
   };
 
-  // Remove token and role from AsyncStorage and state
+  // Logout - clear all storage and navigate to login
   const logout = async () => {
+    await AsyncStorage.clear();
     setToken(null);
-    setUserRole(null);
-    await AsyncStorage.removeItem('authToken');
-    await AsyncStorage.removeItem('userRole');
+    setRole(null);
+    navigation.replace('Login');
+  };
+
+  // Navigate based on role
+  const navigateToStack = (role) => {
+    if (role === 'admin') {
+      navigation.replace('AdminStack');
+    } else {
+      navigation.replace('CustomerStack');
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ token, userRole, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ token, role, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

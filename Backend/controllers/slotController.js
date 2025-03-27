@@ -51,7 +51,7 @@ exports.closeShop = async (req, res) => {
 };
 
 exports.bookSlot = async (req, res) => {
-  const { userId, slotId, category } = req.body;
+  const { userId, slotId, selectedCategory } = req.body;
 
   const slot = await TimeSlot.findById(slotId);
   if (!slot || slot.isBooked) {
@@ -60,7 +60,7 @@ exports.bookSlot = async (req, res) => {
 
   slot.isBooked = true;
   slot.bookedBy = userId;
-  slot.selectedCategory= category;
+  slot.selectedCategory= selectedCategory;
 
   await slot.save();
 
@@ -74,8 +74,28 @@ exports.bookSlot = async (req, res) => {
 
 exports.getSlots = async (req, res) => {
   try {
-    const slots = await TimeSlot.find().populate('bookedBy', 'name');
-    res.json(slots);
+    const availableSlots = await TimeSlot.find({ isBooked: false });
+    const bookedSlots = await TimeSlot.find({ isBooked: true }).populate('bookedBy', 'name');
+
+    res.json({ availableSlots, bookedSlots });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
+
+exports.getUserBookedSlots = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const bookedSlots = await TimeSlot.find({ bookedBy: userId })
+      .populate('bookedBy', 'name')
+      .sort({ slot: 1 });
+
+    res.json(bookedSlots);
   } catch (error) {
     res.status(500).json({ message: 'Internal server error', error: error.message });
   }

@@ -1,41 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { currentTheme } = useTheme();
-
-  // Check token and auto-login
-  useEffect(() => {
-    const checkLoginStatus = async () => {
-      const token = await AsyncStorage.getItem('authToken');
-      const role = await AsyncStorage.getItem('userRole');
-
-      if (token) {
-        console.log('Token found, auto-login with role:', role);
-        
-        // Navigate based on stored role
-        if (role === 'admin') {
-          navigation.replace('AdminStack');
-        } else {
-          navigation.replace('CustomerStack');
-        }
-      }
-    };
-
-    checkLoginStatus();
-  }, []);
+  const { login } = useAuth();
 
   // Handle login
   const handleLogin = async () => {
@@ -57,24 +30,14 @@ const LoginScreen = ({ navigation }) => {
       );
 
       const data = await response.json();
-
       if (response.ok) {
         const token = data.token;
-        const role = data.role; // Store the role too
+        const role = data.role;
 
-        // Store token and role in AsyncStorage
-        await AsyncStorage.setItem('authToken', token);
-        await AsyncStorage.setItem('userRole', role);
+        // Call login to store token and role
+        await login(token, role);
 
         Alert.alert('Success', 'Login successful!');
-        console.log('Token & Role saved:', token, role);
-
-        // Navigate based on the user's role
-        if (role === 'admin') {
-          navigation.replace('AdminStack');
-        } else {
-          navigation.replace('CustomerStack');
-        }
       } else {
         Alert.alert('Error', data.message || 'Invalid email or password.');
       }
@@ -90,33 +53,26 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: currentTheme.backgroundColor }
-      ]}
-    >
-      <Text style={[styles.title, { color: currentTheme.textColor }]}>
-        Login
-      </Text>
-
+    <View style={[styles.container, { backgroundColor: currentTheme.backgroundColor }]}>
+      <Text style={[styles.title, { color: currentTheme.textColor }]}>Login</Text>
+      
       <TextInput
         placeholder="Email"
         placeholderTextColor={currentTheme.placeholderColor}
         value={email}
         onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
         style={[
-          styles.input,
+          styles.input, 
           {
             borderColor: currentTheme.borderColor,
             color: currentTheme.inputTextColor,
             backgroundColor: currentTheme.inputBackground
           }
         ]}
-        keyboardType="email-address"
-        autoCapitalize="none"
       />
-
+      
       <View style={styles.passwordContainer}>
         <TextInput
           placeholder="Password"
@@ -133,14 +89,14 @@ const LoginScreen = ({ navigation }) => {
             }
           ]}
         />
-        <TouchableOpacity
+        <TouchableOpacity 
           style={[
-            styles.eyeButton,
-            {
+            styles.eyeButton, 
+            { 
               backgroundColor: currentTheme.inputBackground,
-              borderColor: currentTheme.borderColor
+              borderColor: currentTheme.borderColor 
             }
-          ]}
+          ]} 
           onPress={togglePasswordVisibility}
         >
           <Text style={{ color: currentTheme.textColor }}>
@@ -148,14 +104,14 @@ const LoginScreen = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: currentTheme.buttonColor }]}
+      
+      <TouchableOpacity 
+        style={[styles.button, { backgroundColor: currentTheme.buttonColor }]} 
         onPress={handleLogin}
       >
         <Text style={[styles.buttonText, { color: '#333333' }]}>Login</Text>
       </TouchableOpacity>
-
+      
       <TouchableOpacity onPress={() => navigation.navigate('Register')}>
         <Text style={[styles.registerText, { color: currentTheme.linkColor }]}>
           Don't have an account? Register
