@@ -9,18 +9,28 @@ const generateSlots = (openingTime, closingTime) => {
   let startTime = new Date(`1970-01-01T${openingTime}:00`);
   let endTime = new Date(`1970-01-01T${closingTime}:00`);
 
+  // Round up startTime to the next full 20-minute slot if it is not on a 20-minute mark
+  let minutes = startTime.getMinutes();
+  let remainder = minutes % 20;
+  if (remainder !== 0) {
+    startTime.setMinutes(minutes + (20 - remainder));
+  }
+
   while (startTime < endTime) {
     let slotEnd = new Date(startTime.getTime() + 20 * 60000);
-
-    slots.push({
-      slot: `${startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${slotEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`,
-      isBooked: false
-    });
+    
+    if (slotEnd <= endTime) {
+      slots.push({
+        slot: `${startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${slotEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`,
+        isBooked: false
+      });
+    }
 
     startTime = slotEnd;
   }
   return slots;
 };
+
 
 exports.openShop = async (req, res) => {
   const { openingTime, closingTime } = req.body;
