@@ -9,6 +9,7 @@ router.get('/details/:id',identifier,adminController.adminDetails)
 router.post('/update-category',adminController.CategoryUpdate)
 router.get('/categories',adminController.Categories)
 router.get('/shop-status',adminController.shopStatus)
-router.get('/shop-records',adminController.Records)
+router.post('/update-records',adminController.updateRecords)
+router.get('/get-records',adminController.GetRecords)
 
 module.exports = router;

@@ -2,6 +2,7 @@ const Admin = require('../models/admin');
 const collection = require('../models/category');
 const Shop = require('../models/shop');
 const records = require('../models/record')
+const TimeSlot = require('../models/timeSlot')
 const jwt = require('jsonwebtoken');
 const { signupSchema} = require('../middlewares/validator');
 const { doHash} = require('../utils/hashing');
@@ -59,8 +60,7 @@ exports.CategoryUpdate = async (req, res) => {
             existing.price = price;
             await existing.save();
             return res.json({ success: true, message: 'price updated' });
-        } else {
-            // If the category does not exist, create a new one
+        } else {  // If the category does not exist, create a new one
             const newCategory = new collection({
                 title,
                 price,
@@ -104,13 +104,37 @@ exports.shopStatus = async (req, res) => {
 	}
 };
 
-exports.Records = async (req, res) => {
+exports.GetRecords = async (req, res) => {
 	try{
 		const record = await records.find({})
-		res.json({ success: true, message: "Status Fetched", record});
+		res.json({ success: true, record});
 
 	} catch (error) {
-		console.error("Error fetching category:", error);
-		res.status(500).json({ success: false, message: "Server error with  fetching category" });
+		console.error("Error fetching Records:", error);
+		res.status(500).json({ success: false, message: "Server error with  fetching Records" });
 	}
+};
+
+exports.updateRecords = async (req, res) => {
+  try {
+    const bookedSlots = await TimeSlot.find({ isBooked: true })
+    const Time = await Shop.find({})
+
+    // Create a new record for the day with the booked slots
+    const newRecord = new records({
+      BookedSlots: bookedSlots.map(slot => ({
+        slot: slot.slot,
+        selectedCategory: slot.selectedCategory,
+        bookedBy:  slot.bookedBy
+      })),
+    openingTime : Time[0].openingTime,
+    closingTime: Time[0].closingTime
+    });
+
+    // Save the record in the database
+    await newRecord.save();
+    res.json({ message: 'Records updated successfully'});
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
 };

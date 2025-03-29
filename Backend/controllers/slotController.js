@@ -105,31 +105,6 @@ exports.getSlots = async (req, res) => {
   }
 };
 
-exports.updateRecords = async (req, res) => {
-  try {
-    const bookedSlots = await TimeSlot.find({ isBooked: true })
-    const Time = await Shop.find({})
-
-    // Create a new record for the day with the booked slots
-    const newRecord = new records({
-      BookedSlots: bookedSlots.map(slot => ({
-        slot: slot.slot,
-        selectedCategory: slot.selectedCategory,
-        bookedBy:  slot.bookedBy
-      })),
-    openingTime : Time[0].openingTime,
-    closingTime: Time[0].closingTime
-    });
-
-    // Save the record in the database
-    await newRecord.save();
-    res.json({ message: 'Records updated successfully', record: newRecord });
-  } catch (error) {
-    res.status(500).json({ message: 'Internal server error', error: error.message });
-  }
-};
-
-
 exports.getUserBookedSlots = async (req, res) => {
   try {
     const { userId } = req.params;
