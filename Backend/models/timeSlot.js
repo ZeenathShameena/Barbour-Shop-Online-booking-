@@ -13,19 +13,15 @@ const timeSlotSchema = new mongoose.Schema({
         type:String
     },
     bookedBy:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'client',
-        default:null,
-    }
-    // bookedBy: [
-    //     {
-    //         _id: { type: mongoose.Schema.Types.ObjectId, ref: "client" }, // Reference Freelancer model
-    //         name: { type: String },
-    //         email: {type: String},
-    //         mobile: {type: String},
-    //         Address: {type: String}
+            id:{
+              type:mongoose.Schema.Types.ObjectId, ref:'client',
+              default:null
+            },
+            name: { type: String },
+            mobile: { type: String },
+            address: { type: String },
+            email: { type: String }
         
-    //     }
-    //]
+    }
 })
 module.exports = mongoose.model('TimeSlot',timeSlotSchema)

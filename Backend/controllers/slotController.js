@@ -2,6 +2,7 @@ const express = require('express');
 const Shop = require('../models/shop');
 const TimeSlot = require('../models/timeSlot');
 const User = require('../models/client');
+const records = require('../models/record')
 
 
 const generateSlots = (openingTime, closingTime) => {
@@ -32,14 +33,14 @@ const generateSlots = (openingTime, closingTime) => {
 };
 
 
-exports.openSlot = async (req, res) => {
+exports.GenerateSlot = async (req, res) => {
   const { openingTime, closingTime } = req.body;
 
   await Shop.updateOne({}, { openingTime, closingTime }, { upsert: true }); 
   const slots = generateSlots(openingTime, closingTime);
   await TimeSlot.deleteMany({});
   await TimeSlot.insertMany(slots);
-  res.json({ message: 'Shop opened and slots generated' });
+  res.json({ message: 'Slots generated' });
 };
 
 exports.openShop = async (req, res) => {
@@ -59,8 +60,7 @@ exports.bookSlot = async (req, res) => {
   const { userId, slotId, selectedCategory } = req.body;
  
   // Check if the user has already booked a slot
-  const existingBooking = await TimeSlot.countDocuments({ bookedBy: userId });
-
+  const existingBooking = await TimeSlot.countDocuments({ "bookedBy.id": userId });
   if (existingBooking >= 2) {
     return res.json({ message: 'you can only book 2 slots per day' });
   }
@@ -69,13 +69,24 @@ exports.bookSlot = async (req, res) => {
   if (!slot || slot.isBooked) {
     return res.json({ message: 'Slot not available' });
   }
+
+    // Fetch the user's name from the User collection
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.json({ message: 'User not found' });
+  }
   slot.isBooked = true;
-  slot.bookedBy = userId;
+  slot.bookedBy = { 
+    id: userId, 
+    name: user.name,
+    mobile: user.mobile,
+    address: user.address,
+    email: user.email 
+  };
   slot.selectedCategory= selectedCategory;
 
   await slot.save();
 
-  const user = await User.findById(userId);
   if (user && user.expoPushToken) {
     await sendNotification(user.expoPushToken, 'Booking Confirmed', `Your slot ${slot.slot} is confirmed`);
   }
@@ -86,13 +97,38 @@ exports.bookSlot = async (req, res) => {
 exports.getSlots = async (req, res) => {
   try {
     const availableSlots = await TimeSlot.find({ isBooked: false });
-    const bookedSlots = await TimeSlot.find({ isBooked: true }).populate('bookedBy', 'name', 'mobile', 'address');
+    const bookedSlots = await TimeSlot.find({ isBooked: true }).populate('bookedBy', 'name');
 
     res.json({ availableSlots, bookedSlots });
   } catch (error) {
     res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };
+
+exports.updateRecords = async (req, res) => {
+  try {
+    const bookedSlots = await TimeSlot.find({ isBooked: true })
+    const Time = await Shop.find({})
+
+    // Create a new record for the day with the booked slots
+    const newRecord = new records({
+      BookedSlots: bookedSlots.map(slot => ({
+        slot: slot.slot,
+        selectedCategory: slot.selectedCategory,
+        bookedBy:  slot.bookedBy
+      })),
+    openingTime : Time[0].openingTime,
+    closingTime: Time[0].closingTime
+    });
+
+    // Save the record in the database
+    await newRecord.save();
+    res.json({ message: 'Records updated successfully', record: newRecord });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
+
 
 exports.getUserBookedSlots = async (req, res) => {
   try {
@@ -102,9 +138,9 @@ exports.getUserBookedSlots = async (req, res) => {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    const bookedSlots = await TimeSlot.find({ bookedBy: userId })
-      .populate('bookedBy', 'name')
-      .sort({ slot: 1 });
+    const bookedSlots = await TimeSlot.find({ "bookedBy.id": userId })
+    .select("bookedBy.name selectedCategory slot")
+    .sort({ slot: 1 });
 
     res.json(bookedSlots);
   } catch (error) {
