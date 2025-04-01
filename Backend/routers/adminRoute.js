@@ -6,6 +6,7 @@ const router = express.Router()
 
 router.post('/signup',adminController.adminSignup)
 router.get('/details',identifier,adminController.adminDetails)
+router.post('/update-admin',identifier,adminController.updateAdmin)
 router.post('/update-category',adminController.CategoryUpdate)
 router.get('/categories',adminController.Categories)
 router.get('/shop-status',adminController.shopStatus)

@@ -14,7 +14,17 @@ const adminSchema = new mongoose.Schema({
     role: {
         type: String,
         default: "admin"
-    }
+    },
+    name: {
+        type: String,
+    },
+    mobile: {
+        type: String
+    },
+    address: {
+        type: String
+    },
+
 });
 
 module.exports = mongoose.model('Admin', adminSchema);

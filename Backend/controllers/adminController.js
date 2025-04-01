@@ -49,6 +49,28 @@ exports.adminDetails = async (req,res)=>{
     }
 }
 
+exports.updateAdmin = async (req, res) => {
+    const { name, mobile, address } = req.body;
+    const {userId, email} = req.user
+    if(!userId){
+        return res.json({success:false, message: 'no admin'})
+    }
+    try{
+        const user = await Admin.findByIdAndUpdate(
+            userId,
+            { name, mobile, address },
+            { new: true, runValidators: true }
+            );
+      
+        await user.save();
+        res.json({ success: true, message: "Admin details added successfully"});
+
+    } catch (error) {
+        console.error("Error adding Admin details:", error);
+        res.status(500).json({ error, success: false, message: "Server error with adding Admin details" });
+    }
+}
+
 exports.CategoryUpdate = async (req, res) => {
 	const { title, price } = req.body;
 	try{
