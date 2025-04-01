@@ -11,6 +11,11 @@ const shopStatusSchema = new mongoose.Schema({
   },
   closingTime:{
     type:String
+  },
+  Category:{
+    title: { type: String },
+    price: { type: String },
   }
 })
+
 module.exports = mongoose.model('ShopStatus',shopStatusSchema)
