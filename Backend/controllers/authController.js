@@ -74,10 +74,7 @@ exports.signin = async (req, res) => {
 				userId: existingUser._id,
 				email: existingUser.email
 			},
-			process.env.TOKEN_SECRET,
-			{
-				expiresIn: '8h',
-			}
+			process.env.TOKEN_SECRET
 		);
         const role = existingUser.role
 		res
