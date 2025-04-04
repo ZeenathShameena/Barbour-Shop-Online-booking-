@@ -76,13 +76,13 @@ exports.signin = async (req, res) => {
 			},
 			process.env.TOKEN_SECRET,
 			{
-				expiresIn: '5m',
+				expiresIn: '2m',
 			}
 		);
         const role = existingUser.role
 		res
 			.cookie('Authorization', 'Bearer ' + token, {
-				expires: new Date(Date.now() + 5 * 60000),  //8 * 3600000
+				expires: new Date(Date.now() + 2 * 60000),  //8 * 3600000
 				httpOnly: process.env.NODE_ENV === 'production',
 				secure: process.env.NODE_ENV === 'production',
 			})
