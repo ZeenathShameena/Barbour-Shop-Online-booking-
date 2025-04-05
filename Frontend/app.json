@@ -9,14 +9,16 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.frontend.app"
     },
     "android": {
       "package": "com.frontend.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": ["RECEIVE_BOOT_COMPLETED", "VIBRATE"]
     },
     "web": {
       "bundler": "metro",
@@ -33,18 +35,26 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#ffffff",
+         
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
     },
-    "owner": "zeenathshameena",
+    "owner": "suman_07",
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-         "projectId": "00f7df5e-f5e7-44b5-b179-a17d8e970809"
+        "projectId": "3b50ccbb-76b6-4b20-a496-929d54a306f8"
       }
     }
   }

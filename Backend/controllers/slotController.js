@@ -12,13 +12,13 @@ const generateSlots = (openingTime, closingTime) => {
 
   // Round up startTime to the next full 20-minute slot if it is not on a 20-minute mark
   let minutes = startTime.getMinutes();
-  let remainder = minutes % 20;
+  let remainder = minutes % 5;
   if (remainder !== 0) {
-    startTime.setMinutes(minutes + (20 - remainder));
+    startTime.setMinutes(minutes + (5 - remainder));
   }
 
   while (startTime < endTime) {
-    let slotEnd = new Date(startTime.getTime() + 20 * 60000);
+    let slotEnd = new Date(startTime.getTime() + 5 * 60000);
     
     if (slotEnd <= endTime) {
       slots.push({

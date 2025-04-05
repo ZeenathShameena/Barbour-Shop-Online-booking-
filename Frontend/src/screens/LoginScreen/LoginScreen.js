@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -31,13 +39,22 @@ const LoginScreen = ({ navigation }) => {
 
       const data = await response.json();
       if (response.ok) {
-        const token = data.token;
-        const role = data.role;
+        const { token, role, userId } = data;
 
-        // Call login to store token and role
-        await login(token, role);
+        // Store token and role in AsyncStorage
+        await AsyncStorage.setItem('userToken', token);
+        await AsyncStorage.setItem('userRole', role);
+        await AsyncStorage.setItem('userId', userId);
 
-        Alert.alert('Success', 'Login successful!');
+        // Use login method from AuthContext to set authentication state
+        await login(token, role, userId);
+
+        // Navigate based on role
+        if (role === 'admin') {
+          navigation.navigate('AdminStack');
+        } else {
+          navigation.navigate('CustomerStack');
+        }
       } else {
         Alert.alert('Error', data.message || 'Invalid email or password.');
       }
@@ -61,8 +78,8 @@ const LoginScreen = ({ navigation }) => {
         placeholderTextColor={currentTheme.placeholderColor}
         value={email}
         onChangeText={setEmail}
-        keyboardType="email-address"
         autoCapitalize="none"
+        keyboardType="email-address"
         style={[
           styles.input, 
           {

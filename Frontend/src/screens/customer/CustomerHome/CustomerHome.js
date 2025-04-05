@@ -7,44 +7,58 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
-  Dimensions
+  Dimensions,
+  RefreshControl
 } from 'react-native'
 import { useShopStatus } from '../../../context/ShopStatusContext'
 import { useNavigation } from '@react-navigation/native'
+import { useTheme } from '../../../context/ThemeContext'
 
 const { width } = Dimensions.get('window')
 
-const CustomerHome = () => {
+export const CustomerHome = () => {
   const { shopStatus, fetchShopStatus } = useShopStatus()
   const [categories, setCategories] = useState([])
   const [loadingCategories, setLoadingCategories] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
   const navigation = useNavigation()
+  const { currentTheme } = useTheme()
 
+  // Fetch categories based on shop status
   const fetchCategories = async () => {
-    try {
-      setLoadingCategories(true)
-      const response = await fetch(
-        'https://gents-camp.onrender.com/api/admin/categories'
-      )
-      const jsonResponse = await response.json()
+    if (shopStatus === 'open') {
+      try {
+        setLoadingCategories(true)
+        const response = await fetch(
+          'https://gents-camp.onrender.com/api/admin/categories'
+        )
+        const jsonResponse = await response.json()
 
-      if (response.ok && jsonResponse?.success) {
-        setCategories(jsonResponse.existingcategory || [])
-      } else {
-        console.error('Failed to fetch categories:', jsonResponse.message)
+        if (response.ok && jsonResponse?.success) {
+          setCategories(jsonResponse.existingcategory || [])
+        } else {
+          console.error('Failed to fetch categories:', jsonResponse.message)
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      } finally {
+        setLoadingCategories(false)
       }
-    } catch (error) {
-      console.error('Error fetching categories:', error)
-    } finally {
-      setLoadingCategories(false)
     }
   }
 
+  // Fetch categories when the shop is open or on refresh
   useEffect(() => {
-    if (shopStatus === 'open') {
-      fetchCategories()
-    }
+    fetchCategories()
   }, [shopStatus])
+
+  // Refresh handler
+  const onRefresh = async () => {
+    setRefreshing(true)
+    await fetchShopStatus() // Fetch latest shop status
+    await fetchCategories() // Fetch categories if shop is open
+    setRefreshing(false)
+  }
 
   // Function to get category images
   const getCategoryImage = (title) => {
@@ -52,18 +66,26 @@ const CustomerHome = () => {
       Haircut: require('../../../assets/images/haircut.jpg'),
       Shaving: require('../../../assets/images/shaving.jpg'),
       Combo: require('../../../assets/images/combo.jpg'),
-      Kids: require('../../../assets/images/kids.jpg')
+      kids: require('../../../assets/images/kids.jpg')
     }
-    return categoryImages[title] 
+    return categoryImages[title]
   }
 
   // Category Card Component
   const CategoryCard = ({ item }) => (
     <TouchableOpacity
-      style={styles.categoryCard}
+      style={[
+        styles.categoryCard, 
+        { 
+          backgroundColor: currentTheme.cardColor, 
+          shadowColor: currentTheme.shadowColor 
+        }
+      ]}
       activeOpacity={0.7}
-      onPress={() => navigation.navigate('SlotBooking', { selectedCategory: item })}
-   >
+      onPress={() =>
+        navigation.navigate('SlotBooking', { selectedCategory: item.title })
+      }
+    >
       <View style={styles.cardContent}>
         <Image
           source={getCategoryImage(item.title)}
@@ -71,8 +93,12 @@ const CustomerHome = () => {
           resizeMode="cover"
         />
         <View style={styles.categoryTextContainer}>
-          <Text style={styles.categoryTitle}>{item.title}</Text>
-          <Text style={styles.categoryPrice}>₹{item.price}</Text>
+          <Text style={[styles.categoryTitle, { color: currentTheme.textColor }]}>
+            {item.title}
+          </Text>
+          <Text style={[styles.categoryPrice, { color: currentTheme.successColor }]}>
+            ₹{item.price}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -80,19 +106,35 @@ const CustomerHome = () => {
 
   if (shopStatus === null) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
+      <View 
+        style={[
+          styles.loadingContainer, 
+          { backgroundColor: currentTheme.backgroundColor }
+        ]}
+      >
+        <ActivityIndicator 
+          size="large" 
+          color={currentTheme.accentColor} 
+        />
       </View>
     )
   }
 
   return (
-    <View style={styles.container}>
+    <View 
+      style={[
+        styles.container, 
+        { backgroundColor: currentTheme.backgroundColor }
+      ]}
+    >
       {shopStatus === 'open' ? (
         <>
           {loadingCategories ? (
             <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#4CAF50" />
+              <ActivityIndicator 
+                size="large" 
+                color={currentTheme.accentColor} 
+              />
             </View>
           ) : (
             <FlatList
@@ -101,34 +143,59 @@ const CustomerHome = () => {
               renderItem={({ item }) => <CategoryCard item={item} />}
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={[currentTheme.accentColor]}
+                />
+              }
             />
           )}
         </>
       ) : (
         <View style={styles.closedContainer}>
-          <Text style={styles.statusClosed}>🚫 Shop is Closed</Text>
-          <Text style={styles.closedSubtext}>We'll be back soon!</Text>
+          <Text 
+            style={[
+              styles.statusClosed, 
+              { color: currentTheme.errorColor }
+            ]}
+          >
+            🚫 Shop is Closed
+          </Text>
+          <Text 
+            style={[
+              styles.closedSubtext, 
+              { color: currentTheme.textColor }
+            ]}
+          >
+            We'll be back soon!
+          </Text>
+          <TouchableOpacity 
+            style={[
+              styles.refreshButton, 
+              { backgroundColor: currentTheme.buttonColor }
+            ]} 
+            onPress={onRefresh}
+          >
+            <Text style={styles.refreshText}>🔄 Refresh Status</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
   )
 }
 
-export default CustomerHome
-
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F9FC',
     paddingHorizontal: 15,
     paddingTop: 20
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF'
+    alignItems: 'center'
   },
   loadingOverlay: {
     flex: 1,
@@ -138,28 +205,34 @@ const styles = StyleSheet.create({
   closedContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F7F9FC'
+    alignItems: 'center'
   },
   statusClosed: {
     fontSize: 24,
-    color: '#D32F2F',
     fontWeight: 'bold',
     marginBottom: 10
   },
   closedSubtext: {
     fontSize: 16,
-    color: '#757575'
+    marginBottom: 20
+  },
+  refreshButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8
+  },
+  refreshText: {
+    fontSize: 16,
+    color: '#333333',
+    fontWeight: 'bold'
   },
   listContent: {
     paddingBottom: 20
   },
   categoryCard: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 15,
     marginBottom: 15,
     elevation: 5,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 4
@@ -181,12 +254,12 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 8
   },
   categoryPrice: {
     fontSize: 18,
-    color: '#4CAF50',
     fontWeight: '600'
   }
 })
+
+export default CustomerHome

@@ -105,7 +105,6 @@ exports.signout = async (req, res) => {
 		.json({ success: true, message: 'logged out successfully' });
 };
 
-
 exports.sendForgotPasswordCode = async (req, res) => {
 	const { email } = req.body;
 	try {
